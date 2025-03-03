@@ -2,63 +2,67 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Detector
 public class ColliderCheck : MonoBehaviour
 {
-    public bool detected = false;
+    public bool yes = false;
 
-    [SerializeField] float detectRadius = 0.05f;
-    [SerializeField] LayerMask detectableLayer;
-    // Automatically call animation while detecting object 
+    [SerializeField] float detectionRadius = 0.05f;
+    [SerializeField] LayerMask detectableLayers;
+    // Automatically call animation when something is detected
     [SerializeField] Animator callAnimationSystem = null;
-    [SerializeField] string animationValueName = "";
-    [SerializeField] bool oppositeResult = false;
+    [SerializeField] string animationParameterName = "";
+    [SerializeField] bool shouldInvertResult = false;
 
-    // When physic engine is updaing
+    // Physics engine update
     private void FixedUpdate()
     {
-        // Having a sphere immediately and to detect what does it touch
-        Collider[] detectedColliderList =  Physics.OverlapSphere(this.transform.position, detectRadius, detectableLayer);
+        // Instantly create a sphere and detect what it collides with
+        Collider[] detectedColliders = Physics.OverlapSphere(this.transform.position, detectionRadius, detectableLayers);
 
-        // If number of detectedColliderList greater than 0
-        if (detectedColliderList.Length > 0)
+        // If the number of colliders detected is greater than 0
+        if (detectedColliders.Length > 0)
         {
-            // Touch something!
-            detected = true;
+            // Define that something was detected
+            yes = true;
         }
         // Otherwise
         else
         {
-            // No touch anything!
-            detected = false;
+            // Nothing was detected
+            yes = false;
         }
-        // If there is using animation system that need to do animation 
-        if (callAnimationSystem != null) 
+
+        if (callAnimationSystem != null)
         {
-            // If don't need the animation system that write into animation directly
-            if(oppositeResult == false)
+            // If inversion of results is not required, directly pass "yes" to the animation
+            if (shouldInvertResult == false)
             {
-                callAnimationSystem.SetBool(animationValueName, detected);
+                callAnimationSystem.SetBool(animationParameterName, yes);
             }
-            // Else output reault is oppsite by intentionally
+            // Otherwise, output the inverted result
             else
             {
-                callAnimationSystem.SetBool(animationValueName, !detected);
+                callAnimationSystem.SetBool(animationParameterName, !yes);
             }
         }
     }
 
-    // Displing assistance line in editor
+    // Display auxiliary lines in the editor
     private void OnDrawGizmos()
     {
+        // Set the color of auxiliary lines
         Gizmos.color = Color.yellow;
-        if (detected)
+
+        if (yes)
         {
-            Gizmos.DrawSphere(this.transform.position, detectRadius);
+            // Draw a solid sphere according to the coordinates and radius
+            Gizmos.DrawSphere(this.transform.position, detectionRadius);
         }
         else
         {
-            // Frame of assistance line
-            Gizmos.DrawWireSphere(this.transform.position, detectRadius);
-        } 
+            // Draw a wireframe sphere according to the coordinates and radius
+            Gizmos.DrawWireSphere(this.transform.position, detectionRadius);
+        }
     }
 }
